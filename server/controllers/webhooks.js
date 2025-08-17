@@ -3,7 +3,7 @@ import User from "../models/User.js";
 
 //API to manage clerck
 
-export const clerckWebhooks = async (req,res) =>{
+export const clerkWebhooks = async (req,res) =>{
     try {
         //SVIX INSTANCE WITH CLERK SECRET 
 
