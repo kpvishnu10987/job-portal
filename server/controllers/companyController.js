@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 import {v2 as cloudinary} from 'cloudinary'
 import generateToken from "../utils/generateToken.js";
 import Job from "../models/Job.js";
+import JobApplication from "../models/JobApplication.js";
 
 
 //register company
@@ -65,7 +66,7 @@ export const loginCompany = async (req,res) => {
         const company = await Company.findOne({email})
 
 
-        if(bcrypt.compare(password,company.password)){
+        if(await bcrypt.compare(password,company.password)){
             res.json({
                 success:true,
                 company:{
@@ -140,13 +141,13 @@ export const getCompanyJobApplicants = async (req,res) => {
     try {
         const companyId = req.company._id
 
-        const jobs = await Job.find({companyId})
+        //Find job applications for the user and populate related data
+        const applications = await JobApplication.find({companyId})
+        .populate('userId','name image resume')
+        .populate('jobId','title location category level salary')
+        .exec()
 
-        //TO-DO
-
-        res.json({success:true , jobsData:jobs})
-        
-        
+        return res.json({success:true,applications})        
     } catch (error) {
         res.json({success:false , message:error.message})
         
@@ -160,8 +161,15 @@ export const getCompanyPostedJobs = async (req,res) => {
         const companyId = req.company._id;
 
         const jobs = await Job.find({companyId});
+
+        //Adding no of applicats to data
+        const jobsData = await Promise.all(jobs.map(async (job) => {
+            const applicants = await JobApplication.find({jobId:job._id});
+            return {...job.toObject(),applicants:applicants.length}
+
+        }))
         
-        res.json({success:true,jobsData:jobs});
+        res.json({success:true,jobsData});
         
     } catch (error) {
         res.json({success:false, message:error.message});
@@ -170,6 +178,16 @@ export const getCompanyPostedJobs = async (req,res) => {
 
 //change job application status 
 export const ChangeJobApplicationsStatus = async (req,res) =>{
+    try {
+        const {id,status} = req.body
+
+        //Find job application and update status
+        await JobApplication.findOneAndUpdate({_id : id},{status})
+
+        res.json({success:true , message :'Status Changed'})
+    } catch (error) {
+        res.json({success:false,message:error.message})
+    }
 
 }
 

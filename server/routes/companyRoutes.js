@@ -9,7 +9,7 @@ router.post('/register',upload.single('image'),registerCompany)
 
 router.post('/login',loginCompany)
 
-router.post('/company',protectCompany,getCompanyData)
+router.get('/company',protectCompany,getCompanyData)
 
 router.post('/post-job',protectCompany,postJob)
 

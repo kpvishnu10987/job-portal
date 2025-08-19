@@ -21,7 +21,7 @@ export const getJobs = async (req,res) =>{
 
 export const getJobById = async (req,res) =>{
     try {
-        const id = req.params
+        const {id} = req.params
 
         const job = await Job.findById(id)
         .populate({
@@ -37,7 +37,7 @@ export const getJobById = async (req,res) =>{
             })
         }
         res.json({
-            message:true,
+            success:true,
             job
         })
 
